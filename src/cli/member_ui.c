@@ -276,7 +276,9 @@ void exchangePointsUI() {
     
     // 检查积分是否足够
     if (member->points < POINTS_FOR_COUPON) {
-        displayError("积分不足！兑换优惠券需要至少 %d 积分", POINTS_FOR_COUPON);
+        char errBuf[100];
+        sprintf(errBuf, "积分不足！兑换优惠券需要至少 %d 积分", POINTS_FOR_COUPON);
+        displayError(errBuf);
         pauseScreen();
         return;
     }

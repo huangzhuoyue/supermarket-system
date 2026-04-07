@@ -76,3 +76,16 @@ ApiResponse api_find_products_by_supplier(char *supplier, int *count) {
     }
     return res;
 }
+
+ApiResponse api_get_all_products(int *count) {
+    ApiResponse res;
+    *count = product_count;
+    if (product_count > 0) {
+        res.status = API_SUCCESS;
+        res.data = products;
+    } else {
+        res.status = API_ERROR_NOT_FOUND;
+        res.data = NULL;
+    }
+    return res;
+}

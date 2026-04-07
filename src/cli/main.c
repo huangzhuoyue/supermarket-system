@@ -6,6 +6,7 @@
 #include "product_ui.h"
 #include "sales_ui.h"
 #include "member_ui.h"
+#include "../web/server.h"
 
 // 前向声明
 void mainMenuLoop();
@@ -14,7 +15,16 @@ void adminMenuLoop();
 /**
  * 主函数
  */
-int main() {
+int main(int argc, char *argv[]) {
+    // 检查是否以 Web 模式启动
+    if (argc > 1 && strcmp(argv[1], "--web") == 0) {
+        printf("Initializing Web Server MVP on port 8000...\n");
+        if (!initializeDataFiles()) return 1;
+        loadProducts(); // 加载商品数据
+        start_web_server("8000");
+        return 0;
+    }
+
     // 初始化数据文件
     if (!initializeDataFiles()) {
         printf("初始化数据文件失败，请检查文件权限！\n");

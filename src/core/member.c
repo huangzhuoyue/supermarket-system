@@ -1,4 +1,5 @@
 #include "member.h"
+#include "file_utils.h"
 
 /**
  * 添加会员

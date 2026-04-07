@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "auth.h"
+#include "file_utils.h"
 
 /**
  * 验证用户登录

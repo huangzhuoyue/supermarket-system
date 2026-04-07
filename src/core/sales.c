@@ -1,4 +1,5 @@
 #include "sales.h"
+#include "file_utils.h"
 #include "product.h"
 #include <time.h>
 
@@ -467,5 +468,26 @@ int getTransactionDetails(char *transaction_id, TransactionDetail **details, int
     *details = (TransactionDetail*)malloc((*count) * sizeof(TransactionDetail));
     if (!(*details)) {
         fclose(file);
-        *count = 0
-(Content truncated due to size limit. Use line ranges to read in chunks)
+        *count = 0;
+        return 0;
+    }
+    
+    fseek(file, 0, SEEK_SET);
+    int idx = 0;
+    while (fgets(line, sizeof(line), file)) {
+        char id[20];
+        sscanf(line, "%[^,]", id);
+        if (strcmp(id, transaction_id) == 0) {
+            sscanf(line, "%[^,],%[^,],%[^,],%f,%d,%f", 
+                (*details)[idx].transaction_id, 
+                (*details)[idx].product_id, 
+                (*details)[idx].product_name, 
+                &(*details)[idx].price, 
+                &(*details)[idx].quantity, 
+                &(*details)[idx].subtotal);
+            idx++;
+        }
+    }
+    fclose(file);
+    return 1;
+}

@@ -1,0 +1,20 @@
+src\core\member.c: In function 'createCoupon':
+src\core\member.c:223:41: warning: '%03d' directive writing between 3 and 11 bytes into a region of size 9 [-Wformat-overflow=]
+  223 |     sprintf(coupons[coupon_count].id, "C%03d", coupon_count + 1);
+      |                                         ^~~~
+src\core\member.c:223:39: note: directive argument in the range [-2147483647, 2147483647]
+  223 |     sprintf(coupons[coupon_count].id, "C%03d", coupon_count + 1);
+      |                                       ^~~~~~~
+src\core\member.c:223:5: note: 'sprintf' output between 5 and 13 bytes into a destination of size 10
+  223 |     sprintf(coupons[coupon_count].id, "C%03d", coupon_count + 1);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src\core\sales.c: In function 'checkout':
+src\core\sales.c:291:33: warning: '%04d' directive writing between 4 and 5 bytes into a region of size between 0 and 19 [-Wformat-overflow=]
+  291 |     sprintf(transaction.id, "%s-%04d", datetime, rand() % 10000);
+      |                                 ^~~~
+src\core\sales.c:291:29: note: directive argument in the range [-9999, 9999]
+  291 |     sprintf(transaction.id, "%s-%04d", datetime, rand() % 10000);
+      |                             ^~~~~~~~~
+src\core\sales.c:291:5: note: 'sprintf' output between 6 and 26 bytes into a destination of size 20
+  291 |     sprintf(transaction.id, "%s-%04d", datetime, rand() % 10000);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

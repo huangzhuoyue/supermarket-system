@@ -7,12 +7,7 @@ ApiResponse api_add_member(Member member) {
     return res;
 }
 
-ApiResponse api_delete_member(char *id) {
-    ApiResponse res;
-    if (deleteMember(id)) res.status = API_SUCCESS;
-    else res.status = API_ERROR_NOT_FOUND;
-    return res;
-}
+
 
 ApiResponse api_update_member(Member member) {
     ApiResponse res;

@@ -12,5 +12,6 @@ ApiResponse api_find_product_by_id(char *id);
 ApiResponse api_find_product_by_name(char *name);
 ApiResponse api_find_products_by_category(char *category, int *count);
 ApiResponse api_find_products_by_supplier(char *supplier, int *count);
+ApiResponse api_get_all_products(int *count);
 
 #endif

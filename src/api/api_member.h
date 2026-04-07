@@ -5,7 +5,6 @@
 #include "member.h"
 
 ApiResponse api_add_member(Member member);
-ApiResponse api_delete_member(char *id);
 ApiResponse api_update_member(Member member);
 ApiResponse api_find_member_by_id(char *id);
 ApiResponse api_find_member_by_phone(char *phone);

@@ -1,4 +1,5 @@
 #include "product.h"
+#include "file_utils.h"
 
 /**
  * 添加商品
