@@ -60,6 +60,8 @@ web_modules/
 .node_repl_history
 
 ads.txt
+*.txt
+.ps1
 
 # Output of 'npm pack'
 *.tgz

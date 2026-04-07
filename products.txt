@@ -1,4 +1,0 @@
-P001,Bread,Food,BakeryA,2.50,98,2026-04-01,7
-P002,Milk,Dairy,FarmB,1.20,49,2026-04-05,14
-P003,Apple,Fruit,FarmC,0.80,197,2026-04-06,10
-P004,Soap,Toiletries,ChemD,3.00,80,0,0
