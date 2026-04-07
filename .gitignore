@@ -61,7 +61,7 @@ web_modules/
 
 ads.txt
 *.txt
-.ps1
+*.ps1
 
 # Output of 'npm pack'
 *.tgz
