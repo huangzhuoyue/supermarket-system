@@ -362,3 +362,70 @@ void displayAllMembersUI() {
     
     pauseScreen();
 }
+
+/**
+ * 显示所有会员
+ */
+/**
+ * 显示会员信息
+ * @param member 会员信息
+ */
+void displayMember(Member member) {
+    printf("会员ID: %s\n", member.id);
+    printf("会员姓名: %s\n", member.name);
+    printf("联系电话: %s\n", member.phone);
+    printf("注册日期: %s\n", member.reg_date);
+    printf("累计消费: %.2f\n", member.total_amount);
+    printf("当前积分: %d\n", member.points);
+    
+    printf("会员等级: ");
+    switch (member.level) {
+        case MEMBER_LEVEL_NORMAL:
+            printf("普通会员 (%.0f%%折扣)\n", DISCOUNT_NORMAL * 100);
+            break;
+        case MEMBER_LEVEL_SILVER:
+            printf("银卡会员 (%.0f%%折扣)\n", DISCOUNT_SILVER * 100);
+            break;
+        case MEMBER_LEVEL_GOLD:
+            printf("金卡会员 (%.0f%%折扣)\n", DISCOUNT_GOLD * 100);
+            break;
+        default:
+            printf("未知\n");
+    }
+}
+void displayAllMembers() {
+    if (member_count == 0) {
+        printf("没有会员记录！\n");
+        return;
+    }
+    
+    printf("%-10s %-20s %-15s %-12s %-10s %-10s %-10s\n", 
+           "会员ID", "会员姓名", "联系电话", "注册日期", "累计消费", "当前积分", "会员等级");
+    printf("---------------------------------------------------------------------------------\n");
+    
+    for (int i = 0; i < member_count; i++) {
+        char level_str[10];
+        switch (members[i].level) {
+            case MEMBER_LEVEL_NORMAL:
+                strcpy(level_str, "普通");
+                break;
+            case MEMBER_LEVEL_SILVER:
+                strcpy(level_str, "银卡");
+                break;
+            case MEMBER_LEVEL_GOLD:
+                strcpy(level_str, "金卡");
+                break;
+            default:
+                strcpy(level_str, "未知");
+        }
+        
+        printf("%-10s %-20s %-15s %-12s %-10.2f %-10d %-10s\n", 
+               members[i].id, 
+               members[i].name, 
+               members[i].phone, 
+               members[i].reg_date, 
+               members[i].total_amount, 
+               members[i].points, 
+               level_str);
+    }
+}

@@ -396,3 +396,92 @@ void findProductsBySupplierUI() {
     
     pauseScreen();
 }
+
+/**
+ * 检查库存不足的商品
+ */
+/**
+ * 显示所有商品
+ */
+/**
+ * 显示商品列表
+ * @param products 商品指针数组
+ * @param count 商品数量
+ */
+/**
+ * 显示单个商品信息
+ * @param product 商品信息
+ */
+void displayProduct(Product product) {
+    printf("商品ID: %s\n", product.id);
+    printf("商品名称: %s\n", product.name);
+    printf("商品分类: %s\n", product.category);
+    printf("供应商: %s\n", product.supplier);
+    printf("单价: %.2f\n", product.price);
+    printf("库存数量: %d\n", product.stock);
+    
+    if (strlen(product.production_date) > 0) {
+        printf("生产日期: %s\n", product.production_date);
+    }
+    
+    if (product.shelf_life > 0) {
+        printf("保质期: %d天\n", product.shelf_life);
+    }
+    
+    // 库存预警
+    if (product.stock < STOCK_WARNING_THRESHOLD) {
+        printf("库存预警: 库存低于预警阈值 %d\n", STOCK_WARNING_THRESHOLD);
+    }
+}
+void displayProductList(Product **product_list, int count) {
+    printf("%-10s %-20s %-10s %-20s %-8s %-8s\n", 
+           "商品ID", "商品名称", "分类", "供应商", "单价", "库存");
+    printf("----------------------------------------------------------------\n");
+    
+    for (int i = 0; i < count; i++) {
+        printf("%-10s %-20s %-10s %-20s %-8.2f %-8d\n", 
+               product_list[i]->id, 
+               product_list[i]->name, 
+               product_list[i]->category, 
+               product_list[i]->supplier, 
+               product_list[i]->price, 
+               product_list[i]->stock);
+    }
+}
+void displayAllProducts() {
+    if (product_count == 0) {
+        printf("没有商品记录！\n");
+        return;
+    }
+    
+    // 创建商品指针数组
+    Product *product_list[MAX_PRODUCTS];
+    for (int i = 0; i < product_count; i++) {
+        product_list[i] = &products[i];
+    }
+    
+    displayProductList(product_list, product_count);
+}
+void checkLowStock() {
+    int found = 0;
+    
+    printf("库存预警商品列表：\n");
+    printf("%-10s %-20s %-10s %-8s\n", 
+           "商品ID", "商品名称", "分类", "库存");
+    printf("--------------------------------------------------\n");
+    
+    for (int i = 0; i < product_count; i++) {
+        if (products[i].stock < STOCK_WARNING_THRESHOLD) {
+            printf("%-10s %-20s %-10s %-8d\n", 
+                   products[i].id, 
+                   products[i].name, 
+                   products[i].category, 
+                   products[i].stock);
+            found = 1;
+        }
+    }
+    
+    if (!found) {
+        printf("没有库存不足的商品！\n");
+    }
+}
