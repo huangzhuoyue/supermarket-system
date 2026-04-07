@@ -20,7 +20,10 @@ int main(int argc, char *argv[]) {
     if (argc > 1 && strcmp(argv[1], "--web") == 0) {
         printf("Initializing Web Server MVP on port 8000...\n");
         if (!initializeDataFiles()) return 1;
+        loadUsers();
         loadProducts(); // 加载商品数据
+        loadMembers();
+        loadCoupons();
         start_web_server("8000");
         return 0;
     }

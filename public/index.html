@@ -3,81 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supermarket MVP</title>
+    <title>Supermarket MVP - Dashboard</title>
     <style>
-        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding: 20px; line-height: 1.5; color: #333; max-width: 900px; margin: 0 auto; }
-        h1, h2 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding: 20px; line-height: 1.5; color: #333; max-width: 900px; margin: 0 auto; background: #fdfdfd;}
+        h1, h2, h3 { color: #2c3e50; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; background: white;}
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f8f9fa; font-weight: 600; }
         tr:hover { background-color: #f1f3f5; }
-        .hero { background: #e9ecef; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
-        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        
+        .hero { background: #e9ecef; padding: 30px; border-radius: 8px; margin-bottom: 30px; position: relative; }
+        .hero-actions { position: absolute; right: 30px; top: 30px; }
+        
+        .btn { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; display: inline-block; font-size: 14px;}
         .btn:hover { background-color: #0056b3; }
-        form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-success { background-color: #28a745; font-weight: bold;}
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #c82333; }
+        .btn-sm { padding: 4px 8px; font-size: 12px; }
+        
+        .admin-panel { background: #fee; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fcc; display: none;}
+        .admin-panel h3 { color: #a00; }
+
+        .tabs { margin-bottom: 15px; border-bottom: 1px solid #ddd; display: flex;}
+        .tab { padding: 10px 15px; cursor: pointer; display: inline-block; background: #eee; border-radius: 4px 4px 0 0; margin-bottom: -1px; border: 1px solid transparent; margin-right: 5px;}
+        .tab.active { background: #fff; color: #007bff; border-color: #ddd #ddd #fff; font-weight: bold;}
+        
+        .tab-content { display: none; padding-top: 15px;}
+        .tab-content.active { display: block; }
+        
+        .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center;}
+        .form-row input, .form-row select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+        .add-form { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 10px;}
+
+        /* Scanner Specific */
+        .scanner-input { font-size: 24px !important; padding: 15px !important; border: 2px solid #007bff !important; background: #fff8dc; font-weight: bold;}
+        .qty-input { width: 60px; padding: 4px; border: 1px solid #ccc; text-align: center;}
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000;}
+        .overlay-card { background: white; padding: 30px; border-radius: 8px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
     </style>
 </head>
 <body>
     <div class="hero">
-        <h1>Supermarket Management System</h1>
-        <p>This is the Hybrid web MVP interfacing directly with the embedded C core logic.</p>
-        <button class="btn" onclick="fetchProducts()">Refresh Products</button>
+        <div class="hero-actions">
+            <span id="welcomeMsg" style="margin-right: 15px; font-weight: bold;"></span>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+        <h1>Supermarket POS System</h1>
+        <p>Retail Terminal & Inventory Workspace</p>
     </div>
 
-    <h2>Inventory Dashboard</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Supplier</th>
-                <th>Price ($)</th>
-                <th>Stock</th>
-            </tr>
-        </thead>
-        <tbody id="product-list">
-            <tr><td colspan="6">Loading products...</td></tr>
-        </tbody>
-    </table>
+    <!-- Admin Tools Only-->
+    <div class="admin-panel" id="adminTools">
+        <h3>Admin Controls: Employee Management</h3>
+        <p>Add or remove employees from the system bounds.</p>
+        <table>
+            <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="user-list"></tbody>
+        </table>
+        <div class="add-form">
+            <strong>Register New Employee</strong>
+            <form onsubmit="addUser(event)">
+                <div class="form-row" style="margin-top: 10px;">
+                    <input type="text" id="newUsername" placeholder="Username" required>
+                    <input type="password" id="newPassword" placeholder="Password" required>
+                    <select id="newRole"><option value="2">Staff (Role 2)</option><option value="1">Admin (Role 1)</option></select>
+                    <button type="submit" class="btn">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('cashier', this)">🛒 Cashier POS</div>
+        <div class="tab" onclick="switchTab('products', this)">📦 Products</div>
+        <div class="tab" onclick="switchTab('members', this)">👥 Members</div>
+    </div>
+
+    <!-- Cashier POS Tab -->
+    <div id="cashier" class="tab-content active">
+        <div class="add-form" style="background:#e3f2fd; border-color:#90caf9;">
+            <h3>Hardware Scanner Emulator</h3>
+            <p style="font-size: 13px; color: #555;">Focus here and use barcode scanner. (Or manually type product ID / VIP Phone No. and press Enter). Note: scanning a VIP member will auto-trigger settlement overlay.</p>
+            <input type="text" id="scannerInput" class="scanner-input form-row" placeholder="Scan Barcode Here..." autocomplete="off">
+        </div>
+        
+        <h3>Current Shopping Cart</h3>
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Price ($)</th><th>Quantity</th><th>Subtotal</th><th>Action</th></tr></thead>
+            <tbody id="cart-list"><tr><td colspan="6">Cart is empty.</td></tr></tbody>
+        </table>
+        <div style="text-align: right; margin-top: 15px;">
+            <h2 id="cartTotalDisplay">Total: $0.00</h2>
+            <button class="btn btn-success" style="font-size: 18px; padding: 10px 30px;" onclick="startSettlement()">Start Settlement</button>
+        </div>
+    </div>
+
+    <!-- Products Tab -->
+    <div id="products" class="tab-content">
+        <h3>Product Inventory</h3>
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Supplier</th><th>Price ($)</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="product-list"><tr><td colspan="7">Loading...</td></tr></tbody>
+        </table>
+        <div class="add-form">
+            <strong>Register/Edit Product</strong>
+            <form onsubmit="addProduct(event)">
+                <div class="form-row" style="margin-top: 10px;">
+                    <input type="text" id="p_id" placeholder="ID (e.g. P005)" required style="flex:0.5;">
+                    <input type="text" id="p_name" placeholder="Name" required>
+                    <input type="text" id="p_cat" placeholder="Category" required>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="p_sup" placeholder="Supplier" required>
+                    <input type="number" step="0.01" id="p_price" placeholder="Price" required style="flex:0.5;">
+                    <input type="number" id="p_stock" placeholder="Stock" required style="flex:0.5;">
+                    <button type="submit" class="btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Members Tab -->
+    <div id="members" class="tab-content">
+        <h3>VIP Members Database</h3>
+        <table>
+            <thead><tr><th>ID/Phone</th><th>Name</th><th>Points</th><th>Level</th><th>Total Spent</th><th>Actions</th></tr></thead>
+            <tbody id="member-list"><tr><td colspan="6">Loading...</td></tr></tbody>
+        </table>
+        <div class="add-form">
+            <strong>Register New VIP Member</strong>
+            <form onsubmit="addMember(event)">
+                <div class="form-row" style="margin-top: 10px;">
+                    <input type="text" id="m_phone" placeholder="Phone (used as ID)" required>
+                    <input type="text" id="m_name" placeholder="Full Name" required>
+                    <button type="submit" class="btn">Enroll Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settlement Overlay -->
+    <div class="overlay" id="settlementOverlay">
+        <div class="overlay-card">
+            <h2 style="margin-top:0;">Payment Settlement</h2>
+            <div id="settlementError" style="color:red; margin-bottom:10px; font-weight:bold;"></div>
+            
+            <p><strong>Total Due:</strong> <span id="settlementTotal" style="font-size:20px; color:#28a745;">$0.00</span></p>
+            
+            <div class="form-row">
+                <input type="text" id="settleMemberId" placeholder="VIP Phone Number (Optional)" onblur="lookupMemberData()">
+                <button class="btn btn-sm" onclick="lookupMemberData()">Lookup</button>
+            </div>
+            
+            <div id="memberRewardsPanel" style="display:none; background:#f9f9f9; padding:10px; margin-bottom:15px; border-radius:4px; border:1px dashed #ccc;">
+                <p style="margin:0 0 10px 0;"><small>VIP Points Available: <strong id="vipPts">0</strong></small></p>
+                <div class="form-row">
+                    <input type="number" id="usePoints" placeholder="Points to use (100 pts = $1)" min="0" value="0">
+                </div>
+                <div class="form-row">
+                    <select id="useCoupon">
+                        <option value="NONE">- No Coupon -</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-success" style="width:100%; padding: 12px; margin-top: 10px;" onclick="confirmCheckout()">Confirm Payment</button>
+            <button class="btn" style="width:100%; padding: 12px; margin-top: 10px; background:#6c757d;" onclick="closeSettlement()">Cancel</button>
+        </div>
+    </div>
+
 
     <script>
+        if (!localStorage.getItem('role')) window.location.href = 'login.html';
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+        const headers = { 'Content-Type': 'application/json', 'X-Role': role };
+
+        document.getElementById('welcomeMsg').innerText = `Welcome, ${username} (${role == 1 ? 'Admin' : 'Staff'})`;
+
+        if (role == 1) {
+            document.getElementById('adminTools').style.display = 'block';
+            fetchUsers();
+        }
+
+        // Global State Objects
+        let gProducts = [];
+        let gMembers = [];
+        let shoppingCart = {}; // { 'P001': 2 }
+
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'cashier') { document.getElementById('scannerInput').focus(); }
+            if (tabId === 'products') fetchProducts();
+            if (tabId === 'members') fetchMembers();
+        }
+
+        async function init() {
+            await fetchProducts();
+            await fetchMembers();
+            document.getElementById('scannerInput').focus();
+        }
+
+        // ---------- USERS API (ADMIN ONLY) ----------
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/users', { headers });
+                const users = await res.json();
+                document.getElementById('user-list').innerHTML = users.map(u => `<tr><td>${u.username}</td><td>${u.role == 1 ? 'Admin' : 'Staff'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteUser('${u.username}')">Remove</button></td></tr>`).join('');
+            } catch (err) { document.getElementById('user-list').innerHTML = `<tr><td colspan="3" style="color:red">API Error.</td></tr>`; }
+        }
+        async function addUser(e) {
+            e.preventDefault();
+            const res = await fetch('/api/users', { method: 'POST', headers, body: JSON.stringify({username: document.getElementById('newUsername').value, password: document.getElementById('newPassword').value, role: document.getElementById('newRole').value}) });
+            if (res.ok) { fetchUsers(); e.target.reset(); } else alert("Failed to add user");
+        }
+        async function deleteUser(u) {
+            if(!confirm(`Delete user ${u}?`)) return;
+            if((await fetch(`/api/users?username=${u}`, { method: 'DELETE', headers })).ok) fetchUsers(); else alert("Failed to delete user");
+        }
+
+        // ---------- PRODUCTS API ----------
         async function fetchProducts() {
             try {
-                const response = await fetch('/api/products');
-                const products = await response.json();
+                const res = await fetch('/api/products');
+                gProducts = await res.json();
+                document.getElementById('product-list').innerHTML = gProducts.map(p => `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.category}</td><td>${p.supplier}</td><td>$${p.price.toFixed(2)}</td><td>${p.stock}</td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button></td></tr>`).join('');
+            } catch (err) { document.getElementById('product-list').innerHTML = `<tr><td colspan="7" style="color:red">Failed to load API data.</td></tr>`; }
+        }
+        async function addProduct(e) {
+            e.preventDefault();
+            const res = await fetch('/api/products', { method: 'POST', headers, body: JSON.stringify({id: document.getElementById('p_id').value, name: document.getElementById('p_name').value, category: document.getElementById('p_cat').value, supplier: document.getElementById('p_sup').value, price: parseFloat(document.getElementById('p_price').value), stock: parseInt(document.getElementById('p_stock').value)}) });
+            if (res.ok) { fetchProducts(); e.target.reset(); } else alert("Failed to add/update product");
+        }
+        async function deleteProduct(id) {
+            if(!confirm(`Delete product ${id}?`)) return;
+            if((await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers })).ok) fetchProducts(); else alert("Forbidden or failed");
+        }
+
+        // ---------- MEMBERS API ----------
+        async function fetchMembers() {
+            try {
+                const res = await fetch('/api/members');
+                gMembers = await res.json();
+                document.getElementById('member-list').innerHTML = gMembers.map(m => `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.points}</td><td>${m.level == 1 ? 'Normal' : 'VIP'}</td><td>$${m.total_amount.toFixed(2)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">Delete</button></td></tr>`).join('');
+            } catch (err) { document.getElementById('member-list').innerHTML = `<tr><td colspan="6" style="color:red">Failed to load API data.</td></tr>`; }
+        }
+        async function addMember(e) {
+            e.preventDefault();
+            const payload = { id: document.getElementById('m_phone').value, phone: document.getElementById('m_phone').value, name: document.getElementById('m_name').value };
+            if((await fetch('/api/members', { method: 'POST', headers, body: JSON.stringify(payload) })).ok) { fetchMembers(); e.target.reset(); } else alert("Failed to add member");
+        }
+        async function deleteMember(id) {
+            if(!confirm(`Delete member ${id}?`)) return;
+            if((await fetch(`/api/members?id=${id}`, { method: 'DELETE', headers })).ok) fetchMembers(); else alert("Forbidden or failed");
+        }
+
+        // ---------- CASHIER POS SYSTEM ----------
+        const scannerInput = document.getElementById('scannerInput');
+        scannerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const code = this.value.trim();
+                this.value = '';
                 
-                const list = document.getElementById('product-list');
-                list.innerHTML = '';
-                
-                if (products.length === 0) {
-                    list.innerHTML = '<tr><td colspan="6">No products found.</td></tr>';
+                // Check if it's a member VIP
+                const member = gMembers.find(m => m.id === code || m.phone === code);
+                if (member) {
+                    // Auto open settlement
+                    document.getElementById('settleMemberId').value = code;
+                    startSettlement();
                     return;
                 }
                 
-                products.forEach(p => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${p.id}</td>
-                        <td>${p.name}</td>
-                        <td>${p.category}</td>
-                        <td>${p.supplier}</td>
-                        <td>$${p.price.toFixed(2)}</td>
-                        <td>${p.stock}</td>
-                    `;
-                    list.appendChild(row);
-                });
-            } catch (err) {
-                console.error('Error fetching APIs:', err);
-                document.getElementById('product-list').innerHTML = `<tr><td colspan="6" style="color:red">Failed to load data. Is the server running?</td></tr>`;
+                // Identify Product
+                const p = gProducts.find(p => p.id === code);
+                if (p) {
+                    if (shoppingCart[code]) shoppingCart[code]++;
+                    else shoppingCart[code] = 1;
+                    renderCart();
+                } else {
+                    alert("Barcode NOT found: " + code);
+                }
             }
+        });
+
+        function updateCartQty(id, newQty) {
+            const qty = parseInt(newQty);
+            if (qty <= 0) delete shoppingCart[id];
+            else shoppingCart[id] = qty;
+            renderCart();
         }
 
-        // Fetch on load
-        fetchProducts();
+        function removeCartItem(id) {
+            delete shoppingCart[id];
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            let total = 0;
+            let html = '';
+            
+            for (const [id, qty] of Object.entries(shoppingCart)) {
+                const p = gProducts.find(x => x.id === id);
+                if (!p) continue;
+                const subtotal = p.price * qty;
+                total += subtotal;
+                html += `<tr>
+                    <td>${id}</td><td>${p.name}</td><td>$${p.price.toFixed(2)}</td>
+                    <td><input type="number" class="qty-input" value="${qty}" min="1" onchange="updateCartQty('${id}', this.value)"></td>
+                    <td>$${subtotal.toFixed(2)}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeCartItem('${id}')">Drop</button></td>
+                </tr>`;
+            }
+            if (html === '') html = '<tr><td colspan="6">Cart is empty.</td></tr>';
+            list.innerHTML = html;
+            document.getElementById('cartTotalDisplay').innerText = `Total: $${total.toFixed(2)}`;
+        }
+
+        // ---------- CHECKOUT SETTLEMENT OVERLAY ----------
+        let currentTotal = 0;
+
+        function startSettlement() {
+            let total = 0;
+            for (const [id, qty] of Object.entries(shoppingCart)) {
+                const p = gProducts.find(x => x.id === id);
+                if (p) total += p.price * qty;
+            }
+            
+            if (total === 0) {
+                alert("购物车为空，无法拉起结算单！ (Cannot checkout empty cart)");
+                return;
+            }
+            
+            currentTotal = total;
+            document.getElementById('settlementTotal').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('settlementError').innerText = '';
+            document.getElementById('settlementOverlay').style.display = 'flex';
+            
+            // Re-lookup inline in case barcode passed the ID recently
+            lookupMemberData();
+        }
+
+        function closeSettlement() {
+            document.getElementById('settlementOverlay').style.display = 'none';
+            document.getElementById('scannerInput').focus();
+        }
+
+        async function lookupMemberData() {
+            const code = document.getElementById('settleMemberId').value.trim();
+            const panel = document.getElementById('memberRewardsPanel');
+            const cpnDrop = document.getElementById('useCoupon');
+            cpnDrop.innerHTML = '<option value="NONE">- No Coupon -</option>';
+            document.getElementById('usePoints').value = 0;
+            
+            if (!code) { panel.style.display = 'none'; return; }
+            
+            const member = gMembers.find(m => m.id === code || m.phone === code);
+            if (!member) {
+                panel.style.display = 'none';
+                document.getElementById('settlementError').innerText = 'Member not found!';
+                return;
+            }
+            
+            document.getElementById('settlementError').innerText = '';
+            document.getElementById('vipPts').innerText = member.points;
+            panel.style.display = 'block';
+            
+            // Lookup coupons natively via API filter
+            try {
+                const res = await fetch(`/api/coupons?member_id=${member.id}`);
+                const cpns = await res.json();
+                cpns.forEach(c => {
+                    cpnDrop.innerHTML += `<option value="${c.id}">[${c.id}] $${c.amount.toFixed(2)} Off (Exp: ${c.expire_date})</option>`;
+                });
+            } catch (err) { console.error("Coupons error:", err); }
+        }
+
+        async function confirmCheckout() {
+            const memberId = document.getElementById('settleMemberId').value.trim() || "NONE";
+            const points = parseInt(document.getElementById('usePoints').value) || 0;
+            const couponId = document.getElementById('useCoupon').value;
+            
+            let itemStrs = [];
+            for (const [id, qty] of Object.entries(shoppingCart)) { itemStrs.push(`${id}:${qty}`); }
+            
+            const payload = {
+                member_id: memberId,
+                points_used: points,
+                coupon_id: couponId,
+                items: itemStrs.join(',')
+            };
+
+            const btn = document.querySelector('#settlementOverlay .btn-success');
+            btn.disabled = true; btn.innerText = "Processing...";
+            
+            try {
+                const res = await fetch('/api/checkout', { method: 'POST', headers, body: JSON.stringify(payload) });
+                const json = await res.json();
+                
+                if (res.ok) {
+                    alert(`✅ Payment Successful!\nTransaction ID: ${json.transaction_id}`);
+                    shoppingCart = {};
+                    renderCart();
+                    closeSettlement();
+                    document.getElementById('settleMemberId').value = '';
+                    fetchProducts(); // Refresh stock
+                    fetchMembers();  // Refresh points
+                } else {
+                    document.getElementById('settlementError').innerText = json.error || 'Server rejected checkout';
+                }
+            } catch (err) {
+                document.getElementById('settlementError').innerText = 'Network error during transaction processing';
+            }
+            
+            btn.disabled = false; btn.innerText = "Confirm Payment";
+        }
+
+        init();
     </script>
 </body>
 </html>
